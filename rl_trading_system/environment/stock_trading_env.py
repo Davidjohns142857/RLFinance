@@ -86,8 +86,7 @@ class StockTradingEnv(gym.Env, BaseModule):
                 - reward_scaling (float): Scale factor for rewards
                 - tech_indicators (List[str]): Technical indicator names
         """
-        BaseModule.__init__(self, config)
-
+        # Set attributes before calling BaseModule.__init__ because _validate_config needs them
         # Market data
         self.data = config.get('data')
         self.symbols = config.get('symbols', [])
@@ -102,6 +101,9 @@ class StockTradingEnv(gym.Env, BaseModule):
         self.action_type = config.get('action_type', 'continuous')
         self.reward_scaling = config.get('reward_scaling', 1.0)
         self.tech_indicators = config.get('tech_indicators', [])
+
+        # Now call BaseModule initialization
+        BaseModule.__init__(self, config)
 
         # State tracking
         self.current_step = 0
@@ -164,8 +166,13 @@ class StockTradingEnv(gym.Env, BaseModule):
                 dtype=np.float32
             )
         else:
-            # Discrete actions: 0=sell, 1=hold, 2=buy for each stock
-            self.action_space = spaces.MultiDiscrete([3] * self.n_stocks)
+            # Discrete actions: 0=sell, 1=hold, 2=buy
+            if self.n_stocks == 1:
+                # Single stock: use simple Discrete space
+                self.action_space = spaces.Discrete(3)
+            else:
+                # Multiple stocks: use MultiDiscrete space
+                self.action_space = spaces.MultiDiscrete([3] * self.n_stocks)
 
         # Observation space
         # State = [balance] + [stock_prices] + [holdings] + [technical_indicators]
@@ -223,7 +230,7 @@ class StockTradingEnv(gym.Env, BaseModule):
 
     def step(
         self,
-        action: np.ndarray
+        action
     ) -> Tuple[np.ndarray, float, bool, bool, Dict]:
         """
         Execute one step in the environment
@@ -268,13 +275,19 @@ class StockTradingEnv(gym.Env, BaseModule):
 
         return observation, reward, terminated, truncated, info
 
-    def _execute_trades(self, action: np.ndarray) -> None:
+    def _execute_trades(self, action) -> None:
         """
         Execute trading actions
 
         Args:
-            action: Trading actions for each stock
+            action: Trading actions for each stock (int for single stock, array for multiple)
         """
+        # Convert single int action to array for uniform processing
+        if isinstance(action, (int, np.integer)):
+            action = np.array([action])
+        elif not isinstance(action, np.ndarray):
+            action = np.array(action)
+
         current_prices = self._get_current_prices()
 
         for i, symbol in enumerate(self.symbols):

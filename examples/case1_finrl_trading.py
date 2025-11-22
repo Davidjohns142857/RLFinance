@@ -214,7 +214,7 @@ def main():
     logger.info("=" * 80)
 
     # Configuration
-    symbols = ['AAPL', 'GOOGL', 'MSFT']
+    symbols = ['AAPL']  # Single stock for DQN compatibility
     initial_capital = 100000
     n_days = 500
     train_episodes = 100

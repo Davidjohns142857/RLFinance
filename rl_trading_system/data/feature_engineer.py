@@ -65,11 +65,12 @@ class FeatureEngineer(BaseModule):
                 - params (Dict): Parameters for indicators
                 - fillna (bool): Fill NaN values
         """
-        super().__init__(config)
-
+        # Set attributes before calling super().__init__ because _validate_config needs them
         self.indicators = config.get('indicators', [])
         self.params = config.get('params', {})
         self.fillna = config.get('fillna', True)
+
+        super().__init__(config)
 
         logger.info(f"FeatureEngineer initialized with {len(self.indicators)} indicators")
 
