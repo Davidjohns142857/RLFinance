@@ -156,7 +156,7 @@ class FeatureEngineer(BaseModule):
 
             # Fill NaN values
             if self.fillna:
-                df = df.fillna(method='ffill').fillna(0)
+                df = df.ffill().fillna(0)
 
             logger.info(f"Features calculated: {df.shape[1]} columns")
             return df

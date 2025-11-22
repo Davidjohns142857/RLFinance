@@ -29,7 +29,7 @@ Example:
 
 import numpy as np
 import pandas as pd
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Tuple, Optional
 import logging
 
 from rl_trading_system.environment.stock_trading_env import StockTradingEnv
